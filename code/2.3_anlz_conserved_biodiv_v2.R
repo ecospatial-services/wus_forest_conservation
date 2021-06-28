@@ -11,12 +11,6 @@ require(ggpubr)
 require(viridis)
 require(dplyr)
 
-# quantiles_95 <- function(x) {
-#   r <- quantile(x, probs=c(0.025, 0.25, 0.5, 0.75, 0.975))
-#   names(r) <- c("ymin", "lower", "middle", "upper", "ymax")
-#   r
-# }
-
 quantiles_95 <- function(x) {
   r <- quantile(x, probs=c(0.05, 0.25, 0.5, 0.75, 0.95))
   names(r) <- c("ymin", "lower", "middle", "upper", "ymax")
@@ -101,7 +95,7 @@ for (i in 1:length(animal.sp.files)){
   habitat.dt <- sp.dt[, .(protected.forest.habitat.km2 = .N, forest.habitat.km2 = first(forest.habitat.km2)), by = c('target','priority','vuln.mask','species.code','taxa','kingdom','name.common','name.scientific')]
   habitat.dt[, protected.forest.habitat.pcnt := protected.forest.habitat.km2 / forest.habitat.km2 * 100]
   animal.sp.habitat.lst[[i]] <- habitat.dt
-  print(i/length(animal.sp.files))
+  print(c(i, round(i/length(animal.sp.files),3), unique(sp.dt$name.common)))
 }
 
 animal.sp.habitat.dt <- rbindlist(animal.sp.habitat.lst)
@@ -119,12 +113,33 @@ sp.habitat.current.dt <- rbind(tree.sp.habitat.current.dt, animal.sp.habitat.cur
 fwrite(sp.habitat.dt, 'output/wus_species_forest_habitat_preserved_by_priority.csv')
 fwrite(sp.habitat.current.dt, 'output/wus_species_forest_habitat_preserved_currently.csv')
 
+# sp.habitat.dt <- fread('output/wus_species_forest_habitat_preserved_by_priority.csv')
+# sp.habitat.current.dt <- fread('output/wus_species_forest_habitat_preserved_currently.csv')
+
+# EXTRACT DATA FOR A FEW SPECIES OF INTEREST ================================================================================
+sp.habitat.dt <- setorder(sp.habitat.dt, target, priority, vuln.mask, taxa, name.common)
+
+sp.habitat.current.dt[name.scientific == 'Canis lupus']$protected.forest.habitat.pcnt
+sp.habitat.dt[name.scientific == 'Canis lupus']
+
+sp.habitat.current.dt[name.scientific == 'Lynx canadensis']$protected.forest.habitat.pcnt # canadian lynx
+sp.habitat.dt[name.scientific == 'Lynx canadensis'] # canadian lynx
+
+
+sp.habitat.current.dt[name.scientific == 'Brachyramphus marmoratus']$protected.forest.habitat.pcnt # marbled murlet
+sp.habitat.dt[name.scientific == 'Brachyramphus marmoratus'] # marbled murlet
+
+sp.habitat.current.dt[name.scientific == 'Strix occidentalis']$protected.forest.habitat.pcnt # spotted owl
+sp.habitat.dt[name.scientific == 'Strix occidentalis'] # spotted owl
+
+
 
 # SUMMARIZE ACROSS priorities, TARGETS, AND TAXA ============================================================================
-taxa.habitat.smry.dt <- sp.habitat.dt[, .(protected.forest.habitat.pcnt.p500 = quantile(protected.forest.habitat.pcnt, 0.5), 
-                                                    protected.forest.habitat.pcnt.p025 = quantile(protected.forest.habitat.pcnt, 0.025),
-                                                    protected.forest.habitat.pcnt.p975 = quantile(protected.forest.habitat.pcnt, 0.975)),
-                                                by = c('target','priority','vuln.mask','taxa','kingdom')]
+taxa.habitat.smry.dt <- sp.habitat.dt[, .(n.sp = .N,
+                                          protected.forest.habitat.pcnt.p500 = quantile(protected.forest.habitat.pcnt, 0.5), 
+                                          protected.forest.habitat.pcnt.p025 = quantile(protected.forest.habitat.pcnt, 0.025),
+                                          protected.forest.habitat.pcnt.p975 = quantile(protected.forest.habitat.pcnt, 0.975)),
+                                      by = c('target','priority','vuln.mask','taxa','kingdom')]
 setorder(taxa.habitat.smry.dt, target, priority, vuln.mask)
 taxa.habitat.smry.dt
 

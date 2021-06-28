@@ -36,7 +36,7 @@ vuln.mask <- c('no','yes')
 pxls <- cpa.pxl.dt$pxl.id
 
 
-# FOREST TOTAL ECOSYSTEM CARBON (AND WATERSHED =============================================================================================
+# SURFACE DRINKING WATER IMPORTANCE =============================================================================================
 
 # expand current protected area data table
 cpa.pxl.expanded.dt <- data.table(expand.grid(pxl.id =  pxls, target = 0, priority = priorities, vuln.mask = vuln.mask))
@@ -55,13 +55,14 @@ cons.pxl.dt$water.imp.rank <- pxl.dt$water.imp.rank[match(cons.pxl.dt$pxl.id, px
 # compute 
 water.imp.rank.thresh <- 0.75
 high.water.imp.smry <- pxl.dt[water.imp.rank >= water.imp.rank.thresh, .(area.km2 = .N)]
+
 forest.high.water.imp.smry <- pxl.dt[forest.extent == 1 & water.imp.rank >= water.imp.rank.thresh, .(area.km2 = .N)]
 forest.cpa.high.water.imp.smry <- pxl.dt[forest.extent == 1 & gap.code <= 2 & water.imp.rank >= water.imp.rank.thresh, .(area.km2 = .N)]
 
 forest.high.water.imp.smry/high.water.imp.smry # fraction of high water importance that occurs in forest
-forest.cpa.high.water.imp.smry/high.water.imp.smry # fraction of high water importance that occurs in protected forest
+forest.cpa.high.water.imp.smry/high.water.imp.smry # fraction of all high water importance lands that occur in protected forest
 
-forest.cpa.high.water.imp.smry/forest.high.water.imp.smry # fraction of high water importance forest 
+forest.cpa.high.water.imp.smry/forest.high.water.imp.smry # fraction of high water importance forest that is protected 
 
 water.imp.smry.dt <- cons.pxl.dt[water.imp.rank >= water.imp.rank.thresh, .(area.km2 = .N), by = c('target','priority','vuln.mask')]
 water.imp.smry.dt[, land.pcnt := round(area.km2 / high.water.imp.smry$area.km2*100)]
@@ -71,16 +72,5 @@ water.imp.smry.dt
 fwrite(water.imp.smry.dt, 'output/wus_surface_water_importance_top75pcnt.csv')
 
 
-# FIGURES =================================================================================
-
-totc.fig <- ggplot(totc.smry.dt[vuln.mask == 'yes'], aes(x=target, y=totc.Pg, fill=target)) + 
-  facet_wrap(~priority) +
-  geom_bar(position="dodge", stat="identity") +
-  geom_text(aes(label = totc.reg.pcnt), vjust = -0.2, color = 'black', size = 3.5) + 
-  scale_fill_viridis(discrete = T, option = "D") +
-  lims(y = c(0,6.5))+
-  theme_bw() + theme(legend.position="none", axis.text=element_text(size=12), axis.title=element_text(size=14)) +
-  xlab("") + ylab('Carbon stocks (Pg)')
-
-totc.fig
-
+# FIGURE =================================================================================
+# ...

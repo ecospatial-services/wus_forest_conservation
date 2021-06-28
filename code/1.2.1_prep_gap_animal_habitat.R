@@ -1,5 +1,5 @@
-# This R script takes GAP species habitat maps (30 m) for the USA and (1) cales them to 1 km resolution with gdal;
-# (2) clips/masks them to WUS, and (3) produces taxa composite species richness maps.
+# This R script takes GAP species habitat maps (30 m) for the USA.  
+# Each dataset is then scaled to 1 km with gdal and clipped/masked to the WUS
 rm(list=ls())
 require(raster)
 require(maptools)
